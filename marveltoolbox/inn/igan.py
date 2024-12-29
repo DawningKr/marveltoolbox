@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+
 class IGAN(nn.Module):
     def __init__(self, realnvp, deq, nc, img_size, cond_label_size):
         super().__init__()
@@ -16,7 +17,7 @@ class IGAN(nn.Module):
         labels = None
         if not y is None:
             labels = torch.zeros(N, self.cond_label_size).to(z.device)
-            labels[:,y] = 1
+            labels[:, y] = 1
 
         x, _ = self.model.inverse(z, labels)
         x = self.deq.inverse(x).view(-1, self.nc, self.img_size, self.img_size)
@@ -28,7 +29,7 @@ class IGAN(nn.Module):
         x = x.view(x.shape[0], -1)
         if not y is None:
             labels = torch.zeros(N, self.cond_label_size).to(x.device)
-            labels[:,y] = 1
+            labels[:, y] = 1
         z, _ = self.model(x, labels)
         return z
 
@@ -38,8 +39,7 @@ class IGAN(nn.Module):
         x = x.view(N, -1)
         if not y is None:
             labels = torch.zeros(N, self.cond_label_size).to(x.device)
-            labels[:,y] = 1
-        return self.model.log_prob(x, labels)/(self.nc * self.img_size * self.img_size)
-        
-    
-    
+            labels[:, y] = 1
+        return self.model.log_prob(x, labels) / (
+            self.nc * self.img_size * self.img_size
+        )

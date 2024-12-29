@@ -1,8 +1,9 @@
 import sys
-sys.path.append('..')
+
+sys.path.append("..")
 import marveltoolbox as mt
 import torch
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     confs = mt.BaseConfs()
     trainer = mt.BaseTrainer(confs)

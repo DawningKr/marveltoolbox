@@ -13,15 +13,27 @@ import numpy as np
 import random
 from random import shuffle
 
+
 def get_suffle_index(data_len, seed=0):
     subset_index = [i for i in range(data_len)]
     random.seed(seed)
     shuffle(subset_index)
     return subset_index
 
+
 class SVHN_SELECT(SVHN):
-    def __init__(self, data_root, label_list=None, split='train', transform=None, target_transform=None, download=False, is_target_attack=False, is_pair=False):
-        data_path = os.path.join(data_root, 'SVHN')
+    def __init__(
+        self,
+        data_root,
+        label_list=None,
+        split="train",
+        transform=None,
+        target_transform=None,
+        download=False,
+        is_target_attack=False,
+        is_pair=False,
+    ):
+        data_path = os.path.join(data_root, "SVHN")
         super().__init__(data_path, split, transform, target_transform, download)
         self.label_list = label_list
         self.class_num = 10
@@ -55,7 +67,7 @@ class SVHN_SELECT(SVHN):
 
     def shuffle_data(self):
         shuffle_data = []
-        
+
         for i, (sample, target) in enumerate(zip(self.data, self.labels)):
             index_list = [j for j in range(len(self.data))]
             index_list.remove(i)
@@ -83,13 +95,13 @@ class SVHN_SELECT(SVHN):
     def preprocess(self):
         selected_data = []
         selected_labels = []
-        
+
         for i in range(len(self.data)):
             # print(self.labels[i])
             if self.labels[i] in self.label_list:
                 selected_data.append(self.data[i])
                 selected_labels.append(self.target_remap(self.labels[i].item()))
-        
+
         self.data = selected_data
         self.labels = selected_labels
 
@@ -102,7 +114,7 @@ class SVHN_SELECT(SVHN):
             tuple: (image, target) where target is index of the target class.
         """
         img, target = self.data[index], int(self.labels[index])
-        
+
         if self.is_pair:
             target_img = self.target_data[index]
         # doing this so that it is consistent with all other datasets
@@ -113,7 +125,7 @@ class SVHN_SELECT(SVHN):
 
         if self.transform is not None:
             img = self.transform(img)
-        
+
         if self.is_pair:
             target_img = self.transform(target_img)
 
@@ -125,8 +137,15 @@ class SVHN_SELECT(SVHN):
 
         return img, target
 
-def load_svhn(data_root,
-    downsample_pct: float = 0.5, train_pct: float = 0.8, batch_size: int = 50, img_size: int = 32, label_list: list = None, is_norm=False
+
+def load_svhn(
+    data_root,
+    downsample_pct: float = 0.5,
+    train_pct: float = 0.8,
+    batch_size: int = 50,
+    img_size: int = 32,
+    label_list: list = None,
+    is_norm=False,
 ) -> Tuple[DataLoader, DataLoader, DataLoader]:
     """
     Load MNIST dataset (download if necessary) and split data into training,
@@ -146,19 +165,27 @@ def load_svhn(data_root,
     #     [transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))]
     # )
     if is_norm:
-        print('image range [-1, 1]')
+        print("image range [-1, 1]")
         transform = transforms.Compose(
-            [transforms.Resize(img_size),transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))]
-        ) 
+            [
+                transforms.Resize(img_size),
+                transforms.ToTensor(),
+                transforms.Normalize((0.5,), (0.5,)),
+            ]
+        )
     else:
-        print('image range [0, 1]')
+        print("image range [0, 1]")
         transform = transforms.Compose(
-            [transforms.Resize(img_size),transforms.ToTensor()]
-        ) 
+            [transforms.Resize(img_size), transforms.ToTensor()]
+        )
     # Load training set
     # pyre-fixme[16]: Module `datasets` has no attribute `MNIST`.
-    train_valid_set = SVHN_SELECT(data_root,
-        label_list=label_list, split='train', download=True, transform=transform
+    train_valid_set = SVHN_SELECT(
+        data_root,
+        label_list=label_list,
+        split="train",
+        download=True,
+        transform=transform,
     )
 
     # Partition into training/validation
@@ -174,42 +201,65 @@ def load_svhn(data_root,
             len(train_valid_set) - downsampled_num_examples,
         ],
     )
-    print('trainset len: {}'.format(len(train_set)))
-    train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=4)
+    print("trainset len: {}".format(len(train_set)))
+    train_loader = DataLoader(
+        train_set, batch_size=batch_size, shuffle=True, num_workers=4
+    )
     if train_pct < 1.0:
-        valid_loader = DataLoader(valid_set, batch_size=batch_size, shuffle=True, num_workers=4)
-        print('valset len: {}'.format(len(valid_set)))
+        valid_loader = DataLoader(
+            valid_set, batch_size=batch_size, shuffle=True, num_workers=4
+        )
+        print("valset len: {}".format(len(valid_set)))
     else:
         valid_loader = None
-    
+
     # Load test set
     # pyre-fixme[16]: Module `datasets` has no attribute `MNIST`.
-    test_set_all = SVHN_SELECT(data_root,
-        label_list=label_list, split='test', download=True, transform=transform
+    test_set_all = SVHN_SELECT(
+        data_root,
+        label_list=label_list,
+        split="test",
+        download=True,
+        transform=transform,
     )
     subset_index = get_suffle_index(len(test_set_all))
     downsampled_num_test_examples = int(downsample_pct * len(test_set_all))
     test_set = torch.utils.data.Subset(
         test_set_all, indices=subset_index[0:downsampled_num_test_examples]
     )
-    print('testset len: {}'.format(len(test_set)))
-    test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False, num_workers=4)
+    print("testset len: {}".format(len(test_set)))
+    test_loader = DataLoader(
+        test_set, batch_size=batch_size, shuffle=False, num_workers=4
+    )
 
-    targeted_attack_test_set_all = SVHN_SELECT(data_root,
-        label_list=label_list, split='test', download=True, transform=transform, is_target_attack=True
+    targeted_attack_test_set_all = SVHN_SELECT(
+        data_root,
+        label_list=label_list,
+        split="test",
+        download=True,
+        transform=transform,
+        is_target_attack=True,
     )
     downsampled_num_test_examples = int(downsample_pct * len(test_set_all))
     targeted_test_set = torch.utils.data.Subset(
-        targeted_attack_test_set_all, indices=subset_index[0:downsampled_num_test_examples]
+        targeted_attack_test_set_all,
+        indices=subset_index[0:downsampled_num_test_examples],
     )
-    targeted_test_loader = DataLoader(targeted_test_set, batch_size=batch_size, shuffle=False, num_workers=4)
+    targeted_test_loader = DataLoader(
+        targeted_test_set, batch_size=batch_size, shuffle=False, num_workers=4
+    )
 
     return train_loader, valid_loader, test_loader, targeted_test_loader
 
     # return train_loader, valid_loader, test_loader
 
+
 def load_svhn_pairs(
-    data_root, downsample_pct: float = 0.5, batch_size: int = 50, img_size: int = 32, label_list: list = None
+    data_root,
+    downsample_pct: float = 0.5,
+    batch_size: int = 50,
+    img_size: int = 32,
+    label_list: list = None,
 ) -> Tuple[DataLoader]:
     """
     Load MNIST dataset (download if necessary) and split data into training,
@@ -224,24 +274,30 @@ def load_svhn_pairs(
         DataLoader: test data
     """
     transform = transforms.Compose(
-        [transforms.Resize(img_size), transforms.ToTensor(),transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
-    ) 
+        [
+            transforms.Resize(img_size),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+        ]
+    )
 
-    test_set_all = SVHN_SELECT(data_root,
-        label_list=label_list, split='test', download=True, transform=transform, is_pair=True
+    test_set_all = SVHN_SELECT(
+        data_root,
+        label_list=label_list,
+        split="test",
+        download=True,
+        transform=transform,
+        is_pair=True,
     )
     subset_index = get_suffle_index(len(test_set_all))
     downsampled_num_test_examples = int(downsample_pct * len(test_set_all))
     test_set = torch.utils.data.Subset(
         test_set_all, indices=subset_index[0:downsampled_num_test_examples]
     )
-    
-    pair_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False, num_workers=4)
+
+    pair_loader = DataLoader(
+        test_set, batch_size=batch_size, shuffle=False, num_workers=4
+    )
     print(len(pair_loader.dataset))
 
     return pair_loader
-
-
-
-
-        

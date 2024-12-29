@@ -4,20 +4,22 @@ import torch.optim as optim
 import torch.nn.functional as F
 from .base import Attack
 
+
 class PGDAttack(Attack):
-    def __init__(self, params={'eps':0.3, 'is_target':False}):
+    def __init__(self, params={"eps": 0.3, "is_target": False}):
         super().__init__()
-        self.step_size = params.get('step_size', 0.01)
-        self.k = params.get('k', 40)
-        self.eps = params.get('eps', 0.3)
-        self.is_target = params.get('is_target', False)
-        self.rand = params.get('random_start', True)
-        self.lower_bound = params.get('lower_bound', 0.0)
-        self.upper_bound = params.get('upper_bound', 1.0)
-       
+        self.step_size = params.get("step_size", 0.01)
+        self.k = params.get("k", 40)
+        self.eps = params.get("eps", 0.3)
+        self.is_target = params.get("is_target", False)
+        self.rand = params.get("random_start", True)
+        self.lower_bound = params.get("lower_bound", 0.0)
+        self.upper_bound = params.get("upper_bound", 1.0)
+
     def get_normed_randinit(self, inputs):
-        rand_init = torch.zeros_like(
-                inputs.data, device=inputs.device).uniform_(-self.eps, self.eps)
+        rand_init = torch.zeros_like(inputs.data, device=inputs.device).uniform_(
+            -self.eps, self.eps
+        )
         return rand_init
 
     def get_loss(self, net, inputs, labels):
@@ -38,9 +40,9 @@ class PGDAttack(Attack):
         loss.backward()
         grad_normed = self.get_normed_grad(inputs)
         if not self.is_target:
-            inputs.data += self.step_size * grad_normed    
+            inputs.data += self.step_size * grad_normed
         else:
-            inputs.data -= self.step_size * grad_normed  
+            inputs.data -= self.step_size * grad_normed
         return inputs
 
     def attack_batch(self, net, inputs, labels):
@@ -54,5 +56,7 @@ class PGDAttack(Attack):
             # if out of the eps-ball, clipped it back
             diff = adv_inputs.data - inputs.data
             diff = self.get_normed_clip(diff)
-            adv_inputs.data = torch.clamp(inputs.data + diff, min=self.lower_bound, max=self.upper_bound)
+            adv_inputs.data = torch.clamp(
+                inputs.data + diff, min=self.lower_bound, max=self.upper_bound
+            )
         return adv_inputs, labels

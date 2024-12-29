@@ -1,7 +1,10 @@
-import numpy as np 
+import numpy as np
 import collections
 
-def get_attack_data_2labels(dataset, class_num=10, origin_target=0, fake_target=1, length=10, repeat=1):
+
+def get_attack_data_2labels(
+    dataset, class_num=10, origin_target=0, fake_target=1, length=10, repeat=1
+):
     """
     Generate the input data to the attack algorithm.
 
@@ -30,6 +33,7 @@ def get_attack_data_2labels(dataset, class_num=10, origin_target=0, fake_target=
                 origin_targets = np.repeat(origin_targets, repeat, 0)
                 return images, fake_targets, origin_targets
 
+
 def get_attack_data_all_labels(dataset, class_num=10, length=1, repeat=1):
     """
     Generate the input data to the attack algorithm.
@@ -63,6 +67,7 @@ def get_attack_data_all_labels(dataset, class_num=10, length=1, repeat=1):
     origin_targets = np.repeat(origin_targets, repeat, 0)
     return images, fake_targets, origin_targets
 
+
 def get_attack_data_all_labels(dataset, class_num=10, length=1, repeat=1):
     """
     Generate the input data to the attack algorithm.
@@ -95,7 +100,10 @@ def get_attack_data_all_labels(dataset, class_num=10, length=1, repeat=1):
     origin_targets = np.repeat(origin_targets, repeat, 0)
     return images, fake_targets, origin_targets
 
-def CW_generate_data(dataset, samples, class_num=10, targeted=True, start=0, inception=False):
+
+def CW_generate_data(
+    dataset, samples, class_num=10, targeted=True, start=0, inception=False
+):
     """
     Generate the input data to the attack algorithm.
     data: the images to attack
@@ -109,18 +117,18 @@ def CW_generate_data(dataset, samples, class_num=10, targeted=True, start=0, inc
     for i in range(samples):
         if targeted:
             if inception:
-                seq = random.sample(range(1,1001), 10)
+                seq = random.sample(range(1, 1001), 10)
             else:
                 seq = range(class_num)
 
             for j in seq:
-                if (j == dataset[start+i][1]) and (inception == False):
+                if (j == dataset[start + i][1]) and (inception == False):
                     continue
-                inputs.append(dataset[start+i][0].numpy())
+                inputs.append(dataset[start + i][0].numpy())
                 targets.append(np.eye(class_num)[j])
         else:
-            inputs.append(dataset[start+i][0].numpy())
-            targets.append(np.eye(class_num)[dataset[start+i][1]])
+            inputs.append(dataset[start + i][0].numpy())
+            targets.append(np.eye(class_num)[dataset[start + i][1]])
 
     inputs = np.array(inputs)
     targets = np.array(targets)
@@ -144,7 +152,6 @@ def get_attack_data_for_feature_attack(dataset, class_num=10, length=1):
 
     image_dict = collections.defaultdict(list)
 
-
     per_fake_target = []
     for i in range(len(dataset)):
         label_now = int(dataset[i][1])
@@ -152,10 +159,9 @@ def get_attack_data_for_feature_attack(dataset, class_num=10, length=1):
             image_dict[label_now].append(dataset[i][0].numpy())
             per_fake_target.append(np.eye(2)[1])
 
-
     for j in range(class_num):
         for k in range(class_num):
-            if j!=k:
+            if j != k:
                 images += image_dict[j]
                 target_images += image_dict[k]
                 fake_targets += per_fake_target
@@ -164,4 +170,3 @@ def get_attack_data_for_feature_attack(dataset, class_num=10, length=1):
     target_images = np.array(target_images)
     fake_targets = np.array(fake_targets)
     return images, target_images, fake_targets
-

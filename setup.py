@@ -1,7 +1,7 @@
 import os
 from setuptools import setup, find_packages
 
-with open('VERSION', 'r') as f:
+with open("VERSION", "r") as f:
     version = f.read().strip()
     if version.endswith("dev"):
         version = version[:-3]
@@ -19,7 +19,7 @@ install_requires = req_file("requirements.txt")
 
 
 setup(
-    name='marveltoolbox',
+    name="marveltoolbox",
     version=version,
     packages=find_packages(),
     author="Renjie Xie",
@@ -29,26 +29,26 @@ setup(
     url="https://github.com/xrj-com/marveltoolbox",
     download_url="https://github.com/xrj-com/marveltoolbox",
     license="GNU GPLv3 License",
-    description='A toolbox for DL communication research.',
+    description="A toolbox for DL communication research.",
     classifiers=[
-            'Development Status :: 3 - Alpha',
-            'Intended Audience :: Developers',
-            'Intended Audience :: Science/Research',
-            'Intended Audience :: Information Technology',
-            'Topic :: Scientific/Engineering',
-            'Topic :: Scientific/Engineering :: Artificial Intelligence',
-            'Topic :: Utilities',
-            'Programming Language :: Python :: 3',
-            'Programming Language :: Python :: 3.8',
-            'Environment :: Console',
-            'Natural Language :: English',
-            'Operating System :: OS Independent',
+        "Development Status :: 3 - Alpha",
+        "Intended Audience :: Developers",
+        "Intended Audience :: Science/Research",
+        "Intended Audience :: Information Technology",
+        "Topic :: Scientific/Engineering",
+        "Topic :: Scientific/Engineering :: Artificial Intelligence",
+        "Topic :: Utilities",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.8",
+        "Environment :: Console",
+        "Natural Language :: English",
+        "Operating System :: OS Independent",
     ],
-    keywords='deep learning, ' \
-             'machine learning, supervised learning, ' \
-             'unsupervised learning, communication, ' \
-             'complex value matrix computiton', 
-    python_requires='>=3.8',
+    keywords="deep learning, "
+    "machine learning, supervised learning, "
+    "unsupervised learning, communication, "
+    "complex value matrix computiton",
+    python_requires=">=3.8",
     platforms=["Linux"],
     # data_files=[('',['VERSION'])],
     include_package_data=True,

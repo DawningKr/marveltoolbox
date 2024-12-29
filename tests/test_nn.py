@@ -1,9 +1,10 @@
 import sys
-sys.path.append('..')
+
+sys.path.append("..")
 import marveltoolbox as mt
 import torch
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_net = mt.nn.wgan.Dnet32(2)
     print(test_net)
     test_net = mt.nn.wgan.Enet32(2, 2)
@@ -25,4 +26,3 @@ if __name__ == '__main__':
 
     test_net = mt.nn.MobileFaceNet(embedding_size=512)
     print(test_net)
-

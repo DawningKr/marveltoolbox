@@ -12,15 +12,27 @@ import random
 import os
 from random import shuffle
 
+
 def get_suffle_index(data_len, seed=0):
     subset_index = [i for i in range(data_len)]
     random.seed(seed)
     shuffle(subset_index)
     return subset_index
 
+
 class MNIST_SELECT(MNIST):
-    def __init__(self, data_root, label_list=None, train=True, transform=None, target_transform=None, download=False, is_target_attack=False, is_pair=False):
-        data_path = os.path.join(data_root, 'MNIST')
+    def __init__(
+        self,
+        data_root,
+        label_list=None,
+        train=True,
+        transform=None,
+        target_transform=None,
+        download=False,
+        is_target_attack=False,
+        is_pair=False,
+    ):
+        data_path = os.path.join(data_root, "MNIST")
         super().__init__(data_path, train, transform, target_transform, download)
         self.label_list = label_list
         self.class_num = 10
@@ -32,16 +44,17 @@ class MNIST_SELECT(MNIST):
                 self.remap_dict[label] = i
             self.preprocess()
             self.class_num = len(label_list)
-        
+
         if self.is_target_attack:
             self.shuffle_targets()
-        
+
         if self.is_pair:
             self.shuffle_data()
             # self.remap_dict = self.one_vs_all(label_list[0], label_list)
+
     def shuffle_targets(self):
         shuffle_targets = []
-        
+
         for target in self.targets:
             target_list = [i for i in range(self.class_num)]
             target_list.remove(int(target))
@@ -51,7 +64,7 @@ class MNIST_SELECT(MNIST):
 
     def shuffle_data(self):
         shuffle_data = []
-        
+
         for i, (sample, target) in enumerate(zip(self.data, self.targets)):
             index_list = [j for j in range(len(self.data))]
             index_list.remove(i)
@@ -62,7 +75,6 @@ class MNIST_SELECT(MNIST):
                     break
         self.target_data = shuffle_data
         self.targets = [0 for i in range(len(self.data))]
-
 
     def one_vs_all(self, target, label_list):
         remap_dict = {}
@@ -80,15 +92,15 @@ class MNIST_SELECT(MNIST):
     def preprocess(self):
         selected_data = []
         selected_targets = []
-        
+
         for i in range(len(self.data)):
             if self.targets[i] in self.label_list:
                 selected_data.append(self.data[i])
                 selected_targets.append(self.target_remap(self.targets[i].item()))
-        
+
         self.data = selected_data
         self.targets = selected_targets
-    
+
     def __getitem__(self, index):
         """
         Args:
@@ -98,18 +110,18 @@ class MNIST_SELECT(MNIST):
             tuple: (image, target) where target is index of the target class.
         """
         img, target = self.data[index], int(self.targets[index])
-        
+
         if self.is_pair:
             target_img = self.target_data[index]
         # doing this so that it is consistent with all other datasets
         # to return a PIL Image
-        img = Image.fromarray(img.numpy(), mode='L')
+        img = Image.fromarray(img.numpy(), mode="L")
         if self.is_pair:
-            target_img = Image.fromarray(target_img.numpy(), mode='L')
+            target_img = Image.fromarray(target_img.numpy(), mode="L")
 
         if self.transform is not None:
             img = self.transform(img)
-        
+
         if self.is_pair:
             target_img = self.transform(target_img)
 
@@ -121,11 +133,16 @@ class MNIST_SELECT(MNIST):
 
         return img, target
 
-    
 
-def load_mnist(data_root,
-    downsample_pct: float = 0.5, train_pct: float = 0.8, batch_size: int = 50, img_size: int = 28,  label_list: list = None, 
-is_norm: bool = False) -> Tuple[DataLoader, DataLoader, DataLoader, DataLoader]:
+def load_mnist(
+    data_root,
+    downsample_pct: float = 0.5,
+    train_pct: float = 0.8,
+    batch_size: int = 50,
+    img_size: int = 28,
+    label_list: list = None,
+    is_norm: bool = False,
+) -> Tuple[DataLoader, DataLoader, DataLoader, DataLoader]:
     """
     Load MNIST dataset (download if necessary) and split data into training,
         validation, and test sets.
@@ -144,19 +161,27 @@ is_norm: bool = False) -> Tuple[DataLoader, DataLoader, DataLoader, DataLoader]:
     #     [transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))]
     # )
     if is_norm:
-        print('image range [-1, 1]')
+        print("image range [-1, 1]")
         transform = transforms.Compose(
-            [transforms.Resize(img_size),transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))]
-        ) 
+            [
+                transforms.Resize(img_size),
+                transforms.ToTensor(),
+                transforms.Normalize((0.5,), (0.5,)),
+            ]
+        )
     else:
-        print('image range [0, 1]')
+        print("image range [0, 1]")
         transform = transforms.Compose(
-            [transforms.Resize(img_size),transforms.ToTensor()]
-        ) 
+            [transforms.Resize(img_size), transforms.ToTensor()]
+        )
     # Load training set
     # pyre-fixme[16]: Module `datasets` has no attribute `MNIST`.
-    train_valid_set = MNIST_SELECT(data_root=data_root,
-        label_list=label_list, train=True, download=True, transform=transform
+    train_valid_set = MNIST_SELECT(
+        data_root=data_root,
+        label_list=label_list,
+        train=True,
+        download=True,
+        transform=transform,
     )
 
     # Partition into training/validation
@@ -172,16 +197,24 @@ is_norm: bool = False) -> Tuple[DataLoader, DataLoader, DataLoader, DataLoader]:
             len(train_valid_set) - downsampled_num_examples,
         ],
     )
-    train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=1)
+    train_loader = DataLoader(
+        train_set, batch_size=batch_size, shuffle=True, num_workers=1
+    )
     if train_pct < 1.0:
-        valid_loader = DataLoader(valid_set, batch_size=batch_size, shuffle=True, num_workers=1)
+        valid_loader = DataLoader(
+            valid_set, batch_size=batch_size, shuffle=True, num_workers=1
+        )
     else:
         valid_loader = None
 
     # Load test set
     # pyre-fixme[16]: Module `datasets` has no attribute `MNIST`.
-    test_set_all = MNIST_SELECT(data_root, 
-        label_list=label_list, train=False, download=True, transform=transform
+    test_set_all = MNIST_SELECT(
+        data_root,
+        label_list=label_list,
+        train=False,
+        download=True,
+        transform=transform,
     )
     subset_index = get_suffle_index(len(test_set_all))
 
@@ -189,25 +222,38 @@ is_norm: bool = False) -> Tuple[DataLoader, DataLoader, DataLoader, DataLoader]:
     test_set = torch.utils.data.Subset(
         test_set_all, indices=subset_index[0:downsampled_num_test_examples]
     )
-    test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False, num_workers=1)
+    test_loader = DataLoader(
+        test_set, batch_size=batch_size, shuffle=False, num_workers=1
+    )
 
-
-    targeted_attack_test_set_all = MNIST_SELECT(data_root,
-        label_list=label_list, train=False, download=True, transform=transform, is_target_attack=False
+    targeted_attack_test_set_all = MNIST_SELECT(
+        data_root,
+        label_list=label_list,
+        train=False,
+        download=True,
+        transform=transform,
+        is_target_attack=False,
     )
     subset_index = get_suffle_index(len(targeted_attack_test_set_all))
 
     downsampled_num_test_examples = int(downsample_pct * len(test_set_all))
     targeted_test_set = torch.utils.data.Subset(
-        targeted_attack_test_set_all, indices=subset_index[0:downsampled_num_test_examples]
+        targeted_attack_test_set_all,
+        indices=subset_index[0:downsampled_num_test_examples],
     )
-    targeted_test_loader = DataLoader(targeted_test_set, batch_size=batch_size, shuffle=False, num_workers=1)
+    targeted_test_loader = DataLoader(
+        targeted_test_set, batch_size=batch_size, shuffle=False, num_workers=1
+    )
 
     return train_loader, valid_loader, test_loader, targeted_test_loader
 
 
 def load_mnist_pairs(
-    data_root,  downsample_pct: float = 0.5, batch_size: int = 50, img_size: int = 28, label_list: list = None
+    data_root,
+    downsample_pct: float = 0.5,
+    batch_size: int = 50,
+    img_size: int = 28,
+    label_list: list = None,
 ) -> Tuple[DataLoader, DataLoader, DataLoader]:
     """
     Load MNIST dataset (download if necessary) and split data into training,
@@ -221,20 +267,23 @@ def load_mnist_pairs(
         DataLoader: validation data
         DataLoader: test data
     """
-    transform = transforms.Compose(
-        [transforms.Resize(img_size),transforms.ToTensor()]
-    ) 
+    transform = transforms.Compose([transforms.Resize(img_size), transforms.ToTensor()])
 
-    test_set_all = MNIST_SELECT(data_root, 
-        label_list=label_list, train=False, download=True, transform=transform, is_pair=True
+    test_set_all = MNIST_SELECT(
+        data_root,
+        label_list=label_list,
+        train=False,
+        download=True,
+        transform=transform,
+        is_pair=True,
     )
     subset_index = get_suffle_index(len(test_set_all))
     downsampled_num_test_examples = int(downsample_pct * len(test_set_all))
     test_set = torch.utils.data.Subset(
         test_set_all, indices=subset_index[0:downsampled_num_test_examples]
     )
-    pair_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False, num_workers=4)
+    pair_loader = DataLoader(
+        test_set, batch_size=batch_size, shuffle=False, num_workers=4
+    )
 
     return pair_loader
-        
-

@@ -10,7 +10,6 @@ class ToyDistribution(D.Distribution):
         self.p_x2 = D.Normal(0, 4)
         self.p_x1 = lambda x2: D.Normal(0.25 * x2**2, 1)
 
-
     def rsample(self, sample_shape=torch.Size()):
         x2 = self.p_x2.sample(sample_shape)
         x1 = self.p_x1(x2).sample()
@@ -22,7 +21,9 @@ class ToyDistribution(D.Distribution):
     def log_prob(self, value):
         if self.flip_var_order:
             value = value.flip(1)
-        return self.p_x1(value[:,1]).log_prob(value[:,0]) + self.p_x2.log_prob(value[:,1])
+        return self.p_x1(value[:, 1]).log_prob(value[:, 0]) + self.p_x2.log_prob(
+            value[:, 1]
+        )
 
 
 class TOY(Dataset):
@@ -38,7 +39,7 @@ class TOY(Dataset):
     def __getitem__(self, i):
         return self.base_dist.sample(), 0
 
+
 def load_toy(dataset_size: int = 25000, batch_size: int = 50, shuffle: bool = True):
     dataset = TOY(dataset_size)
     return DataLoader(dataset, batch_size, shuffle=shuffle)
-

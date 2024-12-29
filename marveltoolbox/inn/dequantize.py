@@ -2,9 +2,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+
 class DequantizeLayer(nn.Module):
 
-    def __init__(self, alpha: float = 1e-6, is_deq: bool = True, is_logit: bool = True) -> None:
+    def __init__(
+        self, alpha: float = 1e-6, is_deq: bool = True, is_logit: bool = True
+    ) -> None:
         super().__init__()
         self.alpha = alpha
         self.is_deq = is_deq

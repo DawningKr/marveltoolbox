@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+
 class NormalizedModel(nn.Module):
     """
     Wrapper for a model to account for the mean and std of a dataset.
